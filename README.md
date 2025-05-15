@@ -5,6 +5,8 @@ Configuración Nginx Reverse Proxy app.conf
 Idea del proyecto: Entorno colaborativo con contenedores Docker. 3 contenedores idénticos con una web en la que cambia el fondo de color en cada uno. 
 Además Nextcloud y Collabora, Nextcloud es una nube donde almacenar archivos y documentos, Collabora permite la edición de los documentos.
 
+tfgraul es el localhost (hay que añadirlo en etc/hosts)
+
 https:tfgraul  | https:tfgraul/hola1  | https:tfgraul/hola2  | https:tfgraul/nextcloud | https:tfgraul/collabora
 
 Problema: https:tfgraul/nextcloud no funcinona correctamente, accedes al dominio y muestra un mensaje: Nextcloud y un link a su web, en lugar de la 
@@ -17,6 +19,8 @@ Docker Compose File with all container setup docker-compose.yaml Self-signed SSL
 
 Project idea: Collaborative environment with Docker containers. 3 identical containers with a web where the background colour changes in each one. 
 In addition Nextcloud and Collabora, Nextcloud is a cloud where to store files and documents, Collabora allows the edition of the documents.
+
+tfgraul is localhost (I added it to etc/hosts)
 
 https:tfgraul | https:tfgraul/hola1 | https:tfgraul/hola2 | https:tfgraul/nextcloud | https:tfgraul/collabora
 
