@@ -1,0 +1,122 @@
+services:
+  web1:
+    image: nginx:alpine3.18-slim
+    container_name: web1
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./web1/nginx/conf.d/:/etc/nginx/conf.d
+      - ./web1/www:/var/www
+    networks:
+      proxyweb:
+        ipv4_address: 172.27.10.11
+    expose:
+      - "80"
+
+  web2:
+    image: nginx:alpine3.18-slim
+    container_name: web2
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./web2/nginx/conf.d/:/etc/nginx/conf.d
+      - ./web2/www:/var/www
+    networks:
+      proxyweb:
+        ipv4_address: 172.27.10.12
+    expose:
+      - "80"
+
+  proxy:
+    image: nginx:alpine3.18-slim
+    container_name: proxy
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./proxy/nginx/conf.d/:/etc/nginx/conf.d      
+      - ./proxy/www:/var/www
+      - ./proxy/nginx/ssl:/etc/nginx/ssl
+    networks:
+      proxyweb:
+        ipv4_address: 172.27.10.2
+      nextcloud:
+        ipv4_address: 172.28.10.2
+      collabora:
+        ipv4_address: 172.29.10.2
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9980:9980"
+    extra_hosts:
+      - "tfgraul:172.27.10.2"
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    networks:
+      nextcloud:
+        ipv4_address: 172.28.10.20
+    ports:
+      - "80"
+    volumes:
+      - nextcloud_data:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=example
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+      - OVERWRITEHOST=tfgraul
+      - OVERWRITEPROTOCOL=https
+
+  collabora:
+    image: collabora/code:latest
+    container_name: collabora
+    restart: unless-stopped
+    networks:
+      collabora:
+        ipv4_address: 172.29.10.21
+    expose:
+      - "9980"    
+    environment:
+      - domain=tfgraul
+      - DONT_GEN_SSL_CERT=1
+      - extra_params=--o:ssl.enable=false
+      - username=admin
+      - password=admin_password
+      - aliasgroup1=tfgraul
+    cap_add:
+      - MKNOD
+    # No volumes needed for Collabora unless you need custom configuration
+  
+  db:
+    image: mariadb
+    container_name: mariadb
+    networks:
+      nextcloud:
+        ipv4_address: 172.28.10.30
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_PASSWORD=example
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  nextcloud_data:
+  db_data:
+
+networks:
+  proxyweb:
+    ipam:
+      config:
+        - subnet: 172.27.10.0/26
+  nextcloud:
+    ipam:
+      config:
+        -  subnet: 172.28.10.0/26
+  collabora:
+    ipam:
+      config:
+        - subnet: 172.29.10.0/26
